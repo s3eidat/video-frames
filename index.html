@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; media-src 'self' data: blob:; connect-src 'self' data: blob:; worker-src 'self' blob:; manifest-src 'self'; form-action 'none'; base-uri 'none'; object-src 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Video Frames — Extract Frames &amp; Thumbnails from a Video, Contact Sheet | S3eidat Tools</title>
+<meta name="description" content="Grab frames from a video at full resolution. Step frame by frame, save PNG, JPG or WebP, auto-capture evenly spaced frames into a contact sheet, download all as a ZIP. Free, private, nothing uploaded.">
+<meta property="og:title" content="Video Frames — free, private frame grabber">
+<meta property="og:description" content="Extract frames, thumbnails and contact sheets from a video. Runs 100% in your browser.">
+<meta property="og:image" content="screenshot.png">
+<link rel="icon" href="kit/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="kit/kit.css">
+<link rel="stylesheet" href="app.css">
+<script src="kit/kit.js"></script>
+</head>
+<body data-tool="video-frames">
+<main class="s3-main">
+  <section class="s3-hero">
+    <h1>Video Frames</h1>
+    <p>Grab frames from a video at full resolution, step frame by frame, or capture evenly spaced frames into a contact sheet. The video never leaves your device.</p>
+  </section>
+
+  <label class="drop" id="drop">
+    <input type="file" hidden>
+    <svg class="i"><use href="#i-upload"/></svg>
+    <b>Drop a video, or click to choose</b>
+    <span class="faint">MP4, WebM, MOV, MKV: anything your browser can play</span>
+  </label>
+
+  <div class="grid-2 vf-grid" id="editor" hidden>
+    <section class="card stack">
+      <div class="row between">
+        <h2 class="fname" id="fname">video</h2>
+        <button class="btn ghost small" id="another"><svg class="i"><use href="#i-upload"/></svg>Open another</button>
+      </div>
+      <div class="player"><video id="video" playsinline muted preload="auto"></video></div>
+      <input type="range" id="scrub" min="0" max="1" step="0.001" value="0" aria-label="Position">
+      <div class="row between">
+        <span class="mono tc" id="tc">0:00.000</span>
+        <span class="faint mono" id="frameNo">frame 0</span>
+      </div>
+      <div class="row transport">
+        <button class="btn icon" id="back1s" title="Back 1 second (Shift+←)" aria-label="Back 1 second">−1s</button>
+        <button class="btn icon" id="prevF" title="Previous frame (←)" aria-label="Previous frame">◀︎|</button>
+        <button class="btn icon" id="playBtn" title="Play / pause (Space)" aria-label="Play"><svg class="i"><use href="#i-play"/></svg></button>
+        <button class="btn icon" id="nextF" title="Next frame (→)" aria-label="Next frame">|▶︎</button>
+        <button class="btn icon" id="fwd1s" title="Forward 1 second (Shift+→)" aria-label="Forward 1 second">+1s</button>
+        <span class="grow"></span>
+        <button class="btn primary" id="capture" title="Capture (C)"><svg class="i"><use href="#i-image"/></svg>Capture frame</button>
+      </div>
+      <div class="row">
+        <div class="seg" id="fmt" role="group" aria-label="Image format">
+          <button aria-pressed="true" data-v="image/png">PNG</button>
+          <button aria-pressed="false" data-v="image/jpeg">JPG</button>
+          <button aria-pressed="false" data-v="image/webp">WebP</button>
+        </div>
+        <label class="field inline" id="qualWrap">Quality <input type="range" id="quality" min="50" max="100" value="92" aria-label="JPG/WebP quality"></label>
+        <label class="field inline">FPS <select class="select" id="fps" aria-label="Frame rate for frame stepping"></select></label>
+      </div>
+      <div class="chips row" id="meta"></div>
+    </section>
+
+    <section class="card stack">
+      <h2>Contact sheet</h2>
+      <div class="grid-3 tight">
+        <label class="field">Frames <input class="input" id="count" type="number" min="2" max="60" value="12"></label>
+        <label class="field">Columns <select class="select" id="cols"><option value="0">Auto</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></label>
+        <label class="field">Thumb width <select class="select" id="thumbW"><option>240</option><option selected>320</option><option>480</option><option>640</option></select></label>
+      </div>
+      <div class="row">
+        <label class="check"><input type="checkbox" id="stamps" checked> Timestamps</label>
+        <label class="check"><input type="checkbox" id="header" checked> Info header</label>
+        <label class="check"><input type="checkbox" id="keepFrames" checked> Add frames to captures</label>
+      </div>
+      <div class="row">
+        <button class="btn primary" id="makeSheet"><svg class="i"><use href="#i-grid"/></svg>Capture evenly spaced frames</button>
+        <span class="faint" id="sheetProgress"></span>
+      </div>
+      <div class="sheet-wrap checker" id="sheetWrap" hidden><img id="sheetImg" alt="Contact sheet preview"></div>
+      <div class="row" id="sheetActions" hidden>
+        <button class="btn" id="dlSheet"><svg class="i"><use href="#i-download"/></svg>Download sheet</button>
+      </div>
+    </section>
+  </div>
+
+  <section class="card mt stack" id="capsCard" hidden>
+    <div class="row between">
+      <h2>Captures <small id="capCount"></small></h2>
+      <div class="row">
+        <button class="btn small ghost" id="clearCaps"><svg class="i"><use href="#i-trash"/></svg>Clear</button>
+        <button class="btn small primary" id="zipAll"><svg class="i"><use href="#i-download"/></svg>Download all (.zip)</button>
+      </div>
+    </div>
+    <div class="caps" id="caps"></div>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
